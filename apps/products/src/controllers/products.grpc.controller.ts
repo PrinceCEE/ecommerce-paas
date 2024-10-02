@@ -1,11 +1,19 @@
 import { Controller } from '@nestjs/common';
 import { ProductService } from '../services';
+import { GrpcMethod } from '@nestjs/microservices';
+import { Observable } from 'rxjs';
+import { GetProductsRequest, GetProductsResponse } from '@libs/shared';
 
 @Controller()
 export class ProductsGrpcController {
   constructor(private readonly productService: ProductService) {}
 
-  async findOne() {}
+  @GrpcMethod('ProductService', 'GetProducts')
+  async getProducts(data: GetProductsRequest) {
+    const response = await this.productService.getProducts({
+      productIds: data.ids,
+    });
 
-  async findAll() {}
+    return { products: response.data.products };
+  }
 }

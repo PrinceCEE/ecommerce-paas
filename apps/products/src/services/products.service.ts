@@ -11,6 +11,8 @@ import { ClientGrpc } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { ApiResponse, OwnerResponse, ProductResponse } from '../types';
 import { mapToProductResponse } from '../utils';
+import { FilterQuery } from 'mongoose';
+import { Product } from '../schemas';
 
 @Injectable()
 export class ProductService implements OnModuleInit {
@@ -34,10 +36,10 @@ export class ProductService implements OnModuleInit {
     let owner = await this.ownerRepository.findById(createProductDto.ownerId);
     if (!owner) {
       let ownerResponse: OwnerResponse = await firstValueFrom(
-        this.ownerService.findById({
+        this.ownerService.getOwner({
           ownerId: createProductDto.ownerId,
         }),
-      );
+      ).then((res) => res.owner);
 
       owner = await this.ownerRepository.create(ownerResponse);
     }
@@ -89,9 +91,15 @@ export class ProductService implements OnModuleInit {
   async getProducts(
     getProductsQuery: GetProductsDto,
   ): Promise<ApiResponse<{ products: ProductResponse[] }>> {
-    const products = await this.productRepository.findAll(
-      getProductsQuery?.ownerId && { owner: getProductsQuery.ownerId },
-    );
+    const filterQuery: FilterQuery<Product> = {};
+    if (getProductsQuery.ownerId) {
+      filterQuery.owner = getProductsQuery.ownerId;
+    }
+    if (getProductsQuery.productIds?.length) {
+      filterQuery._id = { $in: getProductsQuery.productIds };
+    }
+
+    const products = await this.productRepository.findAll(filterQuery);
 
     return {
       message: 'Products fetched',

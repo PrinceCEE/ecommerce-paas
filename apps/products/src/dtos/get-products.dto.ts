@@ -4,4 +4,6 @@ export class GetProductsDto {
   @IsString()
   @IsOptional()
   ownerId?: string;
+
+  productIds?: string[];
 }
