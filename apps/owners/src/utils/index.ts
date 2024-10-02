@@ -7,6 +7,7 @@ import { readFile } from 'fs/promises';
 
 export const mapToOwnerResponse = (owner: Owner): OwnerResponse => {
   return {
+    id: owner.id,
     firstName: owner.firstName,
     lastName: owner.lastName,
     email: owner.email,

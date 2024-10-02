@@ -2,6 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { OwnersModule } from './owners.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { ValidationPipe } from '@nestjs/common';
+import { join } from 'path';
+import { GrpcPackageNames } from '@libs/shared';
 
 async function bootstrap() {
   const app = await NestFactory.create(OwnersModule);
@@ -15,7 +17,8 @@ async function bootstrap() {
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.GRPC,
     options: {
-      package: '',
+      package: GrpcPackageNames.OWNER,
+      protoPath: join(__dirname, 'owners/owner.proto'),
     },
   });
 

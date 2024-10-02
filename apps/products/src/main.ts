@@ -1,6 +1,8 @@
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { ProductsModule } from './products.module';
+import { GrpcPackageNames } from '@libs/shared';
+import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create(ProductsModule);
@@ -13,7 +15,8 @@ async function bootstrap() {
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.GRPC,
     options: {
-      package: '',
+      package: GrpcPackageNames.PRODUCT,
+      protoPath: join(__dirname, 'products/product.proto'),
     },
   });
 
