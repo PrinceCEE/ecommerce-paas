@@ -5,7 +5,7 @@ import { OwnersService } from '../services/owners.service';
 export class OwnersGrpcController {
   constructor(private readonly ownersService: OwnersService) {}
 
-  async findOne() {}
+  async findOwner() {}
 
-  async findAll() {}
+  async findOwners() {}
 }
