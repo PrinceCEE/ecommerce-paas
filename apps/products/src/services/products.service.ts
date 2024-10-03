@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Inject,
   Injectable,
   NotFoundException,
@@ -6,11 +7,17 @@ import {
 } from '@nestjs/common';
 import { OwnerRepository, ProductRepository } from '../repositories';
 import { CreateProductDto, GetProductsDto, UpdateProductDto } from '../dtos';
-import { GrpcNames, GrpcServiceNames, OwnerService } from '@libs/shared';
-import { ClientGrpc } from '@nestjs/microservices';
+import {
+  EventNames,
+  GrpcNames,
+  GrpcServiceNames,
+  OwnerService,
+  RabbitMQNames,
+} from '@libs/shared';
+import { ClientGrpc, ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { ApiResponse, OwnerResponse, ProductResponse } from '../types';
-import { mapToProductResponse } from '../utils';
+import { mapToProductEventResponse, mapToProductResponse } from '../utils';
 import { FilterQuery } from 'mongoose';
 import { Product } from '../schemas';
 
@@ -22,6 +29,7 @@ export class ProductService implements OnModuleInit {
     private readonly ownerRepository: OwnerRepository,
     private readonly productRepository: ProductRepository,
     @Inject(GrpcNames.OWNER) private ownerServiceClient: ClientGrpc,
+    @Inject(RabbitMQNames.PRODUCT) private productServiceClient: ClientProxy,
   ) {}
 
   onModuleInit() {
@@ -48,6 +56,13 @@ export class ProductService implements OnModuleInit {
       throw new NotFoundException('Owner not found');
     }
 
+    const productExists = await this.productRepository.findBySky(
+      createProductDto.sku,
+    );
+    if (productExists) {
+      throw new BadRequestException('Duplicate sku value');
+    }
+
     const product = await this.productRepository.create(createProductDto);
     return {
       message: 'Product created',
@@ -68,6 +83,12 @@ export class ProductService implements OnModuleInit {
       productId,
       updateProductDto,
     );
+
+    this.productServiceClient.emit(
+      EventNames.PRODUCT_UPDATED,
+      mapToProductEventResponse(product),
+    );
+
     return {
       message: 'Product updated',
       data: { product: mapToProductResponse(product) },
@@ -100,6 +121,9 @@ export class ProductService implements OnModuleInit {
     }
 
     const products = await this.productRepository.findAll(filterQuery);
+    products.forEach((p) => {
+      if (!p) throw new NotFoundException('Product not found');
+    });
 
     return {
       message: 'Products fetched',

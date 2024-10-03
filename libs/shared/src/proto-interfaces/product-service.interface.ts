@@ -15,6 +15,8 @@ interface Product {
   description: string;
   sku: string;
   ownerId: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface ProductService {

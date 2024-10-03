@@ -16,7 +16,7 @@ export class OrdersHttpController {
   @Put(':id')
   async updateOrder(
     @Param('id', ParseMongoDBID) orderId: string,
-    updateOrderDto: UpdateOrderDto,
+    @Body() updateOrderDto: UpdateOrderDto,
   ) {
     const data = await this.orderService.updateOrderDto(
       orderId,

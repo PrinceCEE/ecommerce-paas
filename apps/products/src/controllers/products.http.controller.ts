@@ -16,7 +16,7 @@ export class ProductsHttpController {
   @Put(':id')
   async updateProduct(
     @Param('id', ParseMongoDBID) productId: string,
-    updateProductDto: UpdateProductDto,
+    @Body() updateProductDto: UpdateProductDto,
   ) {
     const data = await this.productService.updateProduct(
       productId,

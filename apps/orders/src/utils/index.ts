@@ -10,6 +10,8 @@ export const mapToOrderItemsResponse = (
     product: mapToProductResponse(orderItem.product as Product),
     unitPrice: orderItem.unitPrice,
     quantity: orderItem.quantity,
+    createdAt: orderItem.createdAt,
+    updatedAt: orderItem.updatedAt,
   };
 };
 
@@ -21,6 +23,8 @@ export const mapToProductResponse = (product: Product): ProductResponse => {
     description: product.description,
     sku: product.sku,
     ownerId: product.ownerId,
+    createdAt: product.createdAt,
+    updatedAt: product.updatedAt,
   };
 };
 
@@ -34,6 +38,8 @@ export const mapToOrderResponse = (
     totalAmount: order.totalAmount,
     instructions: order.instructions,
     buyerInfo: order.buyerInfo,
+    createdAt: order.createdAt,
+    updatedAt: order.updatedAt,
   };
 };
 

@@ -4,6 +4,8 @@ export type OwnerResponse = {
   lastName: string;
   email: string;
   address: string;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 export type ProductResponse = {
@@ -13,6 +15,8 @@ export type ProductResponse = {
   description: string;
   sku: string;
   owner: OwnerResponse;
+  createdAt: Date | string;
+  updatedAt: Date | string;
 };
 
 export type ApiResponse<T = null> = {

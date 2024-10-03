@@ -39,15 +39,20 @@ export class OrderService implements OnModuleInit {
       this.productService.GetProducts({ ids: items.map((i) => i.productId) }),
     ).then((res) => res.products);
 
-    await this.productRepository.updateMany(
-      productsResponse.map((p) => {
-        const { id, ...dto } = p;
-        return { ...dto, _id: id };
-      }),
-    );
+    await this.productRepository.updateMany(productsResponse);
 
     const totalAmount = getTotalAmount(productsResponse);
     createOrderDto.totalAmount = totalAmount;
+    createOrderDto.items.forEach((i) => {
+      const product = productsResponse.find((p) => p.id === i.productId);
+      if (!product) {
+        throw new NotFoundException('Product not found');
+      }
+
+      i.unitPrice = product.price;
+    });
+
+    console.log(createOrderDto.items);
     const order = await this.orderRepository.create(createOrderDto);
     return {
       message: 'Order created',
@@ -71,17 +76,20 @@ export class OrderService implements OnModuleInit {
         }),
       ).then((res) => res.products);
 
-      const totalAmount = getTotalAmount(productsResponse);
-      if (totalAmount !== orderExists.totalAmount) {
-        await this.productRepository.updateMany(
-          productsResponse.map((p) => {
-            const { id, ...dto } = p;
-            return { ...dto, _id: id };
-          }),
-        );
-
-        updateOrderDto.totalAmount = totalAmount;
+      if (!productsResponse) {
+        throw new NotFoundException('Products not found');
       }
+
+      updateOrderDto.totalAmount = getTotalAmount(productsResponse);
+      updateOrderDto.items.forEach((i) => {
+        const product = productsResponse.find((p) => p.id === i.productId);
+        if (!product) {
+          throw new NotFoundException('Product not found');
+        }
+
+        i.unitPrice = product.price;
+      });
+      await this.productRepository.updateMany(productsResponse);
     }
 
     const order = await this.orderRepository.update(orderId, updateOrderDto);

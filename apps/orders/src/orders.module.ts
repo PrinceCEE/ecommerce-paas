@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { OrdersHttpController } from './controllers';
+import { OrdersEventsController, OrdersHttpController } from './controllers';
 import { OrderService } from './services';
 import { OrderRepository, ProductRepository } from './repositories';
 import { ConfigModule } from '@nestjs/config';
@@ -13,12 +13,7 @@ import {
   ProductSchema,
 } from './schemas';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import {
-  GrpcNames,
-  GrpcPackageNames,
-  QueueNames,
-  RabbitMQNames,
-} from '@libs/shared';
+import { GrpcNames, GrpcPackageNames } from '@libs/shared';
 import { join } from 'path';
 
 @Module({
@@ -46,19 +41,12 @@ import { join } from 'path';
         options: {
           package: GrpcPackageNames.PRODUCT,
           protoPath: join(process.cwd(), 'protos/product.proto'),
-        },
-      },
-      {
-        name: RabbitMQNames.PRODUCT,
-        transport: Transport.RMQ,
-        options: {
-          urls: [process.env.RABBITMQ_URL],
-          queue: QueueNames.PRODUCT,
+          url: process.env.PRODUCTS_GRPC_URL,
         },
       },
     ]),
   ],
-  controllers: [OrdersHttpController],
+  controllers: [OrdersHttpController, OrdersEventsController],
   providers: [OrderService, OrderRepository, ProductRepository],
 })
 export class OrdersModule {}

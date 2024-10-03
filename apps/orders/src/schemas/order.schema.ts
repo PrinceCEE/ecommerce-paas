@@ -25,6 +25,9 @@ export class Order extends Document {
     email: string;
     address: string;
   };
+
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);

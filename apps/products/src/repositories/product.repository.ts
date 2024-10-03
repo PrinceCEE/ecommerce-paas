@@ -27,6 +27,10 @@ export class ProductRepository {
     return this.productModel.findOne({ _id: productId }).populate('owner');
   }
 
+  async findBySky(sku: string) {
+    return this.productModel.findOne({ sku }).populate('owner');
+  }
+
   async findAll(filter?: { owner?: string }) {
     return this.productModel.find(filter).populate('owner');
   }

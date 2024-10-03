@@ -1,8 +1,7 @@
 import { Controller } from '@nestjs/common';
 import { ProductService } from '../services';
 import { GrpcMethod } from '@nestjs/microservices';
-import { Observable } from 'rxjs';
-import { GetProductsRequest, GetProductsResponse } from '@libs/shared';
+import { GetProductsRequest } from '@libs/shared';
 
 @Controller()
 export class ProductsGrpcController {

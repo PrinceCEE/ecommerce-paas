@@ -1,8 +1,10 @@
 export class CreateProductDto {
-  _id: string;
+  id: string;
   name: string;
   price: string;
   description: string;
   sku: string;
   ownerId: string;
+  createdAt: Date;
+  updatedAt: Date;
 }

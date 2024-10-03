@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -13,14 +14,19 @@ import {
   hashPassword,
   mapToOwnerResponse,
 } from '../utils';
+import { EventNames, RabbitMQNames } from '@libs/shared';
+import { ClientProxy } from '@nestjs/microservices';
 
 @Injectable()
 export class OwnersService {
-  constructor(private readonly ownerRepository: OwnerRepository) {}
+  constructor(
+    private readonly ownerRepository: OwnerRepository,
+    @Inject(RabbitMQNames.OWNER) private client: ClientProxy,
+  ) {}
 
   async createOwner(
     createOwnerDto: CreateOwnerDto,
-  ): Promise<ApiResponse<{ owner: OwnerResponse }>> {
+  ): Promise<ApiResponse<{ owner: OwnerResponse; accessToken: string }>> {
     const ownerExists = await this.ownerRepository.findByEmail(
       createOwnerDto.email,
     );
@@ -31,9 +37,10 @@ export class OwnersService {
 
     createOwnerDto.password = await hashPassword(createOwnerDto.password);
     const owner = await this.ownerRepository.create(createOwnerDto);
+    const accessToken = await generateAccessToken({ sub: owner.id });
     return {
       message: 'Owner created',
-      data: { owner: mapToOwnerResponse(owner) },
+      data: { owner: mapToOwnerResponse(owner), accessToken },
     };
   }
 
@@ -49,10 +56,10 @@ export class OwnersService {
       throw new UnauthorizedException('Invalid email  or password');
     }
 
-    const accessToken = await generateAccessToken({ ownerId: owner.id });
+    const accessToken = await generateAccessToken({ sub: owner.id });
     return {
       message: 'Owner logged in',
-      data: { accessToken, owner },
+      data: { accessToken, owner: mapToOwnerResponse(owner) },
     };
   }
 
@@ -66,6 +73,8 @@ export class OwnersService {
     }
 
     const owner = await this.ownerRepository.update(ownerId, updateOwnerDto);
+
+    this.client.emit(EventNames.OWNER_UPDATED, mapToOwnerResponse(owner));
     return {
       message: 'Owner updated',
       data: { owner: mapToOwnerResponse(owner) },

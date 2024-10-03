@@ -17,6 +17,9 @@ export class Owner extends Document {
 
   @Prop({ required: true })
   address: string;
+
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export const OwnerSchema = SchemaFactory.createForClass(Owner);

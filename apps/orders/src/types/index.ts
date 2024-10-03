@@ -5,6 +5,8 @@ export type ProductResponse = {
   description: string;
   sku: string;
   ownerId: string;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 export type OrderItemResponse = {
@@ -13,6 +15,8 @@ export type OrderItemResponse = {
   product: ProductResponse;
   unitPrice: string;
   quantity: number;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 export type OrderResponse = {
@@ -25,6 +29,8 @@ export type OrderResponse = {
     email: string;
     address: string;
   };
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 export type ApiResponse<T = null> = {

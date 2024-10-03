@@ -1,5 +1,5 @@
 services:
-  owner-service:
+  owners:
     build:
       context: .
       args:
@@ -12,8 +12,10 @@ services:
     environment:
       MONGO_URI: mongodb://owner-db:27017/owners
       RABBITMQ_URL: amqp://rabbitmq:5672
+      JWT_SECRET: asjabskasknnaskn
+      OWNERS_GRPC_URL: owners:5000
 
-  product-service:
+  products:
     build:
       context: .
       args:
@@ -26,8 +28,10 @@ services:
     environment:
       MONGO_URI: mongodb://product-db:27017/products
       RABBITMQ_URL: amqp://rabbitmq:5672
+      PRODUCTS_GRPC_URL: products:5001
+      OWNERS_GRPC_URL: owners:5000
 
-  order-service:
+  orders:
     build:
       context: .
       args:
@@ -43,6 +47,7 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       RABBITMQ_URL: amqp://rabbitmq:5672
+      PRODUCTS_GRPC_URL: products:5001
 
   owner-db:
     image: mongo:4.2

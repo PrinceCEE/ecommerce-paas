@@ -20,6 +20,9 @@ export class Product extends Document {
 
   @Prop({ required: true })
   ownerId: string;
+
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export const ProductSchema = SchemaFactory.createForClass(Product);

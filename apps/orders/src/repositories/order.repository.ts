@@ -1,5 +1,5 @@
-import { InjectConnection, InjectModel } from '@nestjs/mongoose';
-import { Connection, Model, UpdateQuery } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, UpdateQuery } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { Order, OrderItem } from '../schemas';
 import { CreateOrderDto, UpdateOrderDto } from '../dtos';
@@ -12,104 +12,80 @@ export class OrderRepository {
     @InjectModel(Order.name) private readonly orderModel: Model<Order>,
     @InjectModel(OrderItem.name)
     private readonly orderItemModel: Model<OrderItem>,
-
-    @InjectConnection() private readonly connection: Connection,
   ) {}
 
   async create(createOrderDto: CreateOrderDto): Promise<OrderResponse> {
-    const session = await this.connection.startSession();
-    session.startTransaction();
+    const order = await this.orderModel.create({
+      instructions: createOrderDto.instructions,
+      buyerInfo: createOrderDto.buyerInfo,
+      totalAmount: createOrderDto.totalAmount,
+    });
 
-    try {
-      const order = await new this.orderModel({
-        instructions: createOrderDto.instructions,
-        buyerInfo: createOrderDto.buyerInfo,
-        totalAmount: createOrderDto.totalAmount,
-      }).save({ session });
-
-      const orderItems = await Promise.all(
-        createOrderDto.items.map((i) => {
-          const item = new this.orderItemModel({
+    const orderItems = await Promise.all(
+      createOrderDto.items.map(async (i) => {
+        return this.orderItemModel
+          .create({
             order: order.id,
             product: i.productId,
             quantity: i.quantity,
             unitPrice: i.unitPrice,
-          });
+          })
+          .then((i) => i.populate('product'));
+      }),
+    );
 
-          return item.save({ session });
-        }),
-      );
-
-      await session.commitTransaction();
-      return mapToOrderResponse(order, orderItems);
-    } catch (err) {
-      await session.abortTransaction();
-      throw err;
-    } finally {
-      await session.endSession();
-    }
+    return mapToOrderResponse(order, orderItems);
   }
 
   async update(
     orderId: string,
     updateOrderDto: UpdateOrderDto,
   ): Promise<OrderResponse> {
-    const session = await this.connection.startSession();
-    session.startTransaction();
+    const updateQuery: UpdateQuery<Order> = {};
+    if (updateOrderDto.instructions) {
+      updateOrderDto.instructions = updateOrderDto.instructions;
+    }
+    if (updateOrderDto.buyerInfo) {
+      updateOrderDto.buyerInfo = updateOrderDto.buyerInfo;
+    }
+    if (updateOrderDto.totalAmount) {
+      updateOrderDto.totalAmount = updateOrderDto.totalAmount;
+    }
+    const order = await this.orderModel.findOneAndUpdate(
+      { _id: orderId },
+      updateQuery,
+      { new: true },
+    );
 
-    try {
-      const updateQuery: UpdateQuery<Order> = {};
-      if (updateOrderDto.instructions) {
-        updateOrderDto.instructions = updateOrderDto.instructions;
-      }
-      if (updateOrderDto.buyerInfo) {
-        updateOrderDto.buyerInfo = updateOrderDto.buyerInfo;
-      }
-      if (updateOrderDto.totalAmount) {
-        updateOrderDto.totalAmount = updateOrderDto.totalAmount;
-      }
-      const order = await this.orderModel.findOneAndUpdate(
-        { _id: orderId },
-        updateQuery,
-        { new: true, session },
-      );
+    let orderItems: OrderItem[];
+    if (updateOrderDto.items?.length) {
+      await this.orderItemModel.deleteMany({ order: orderId });
 
-      let orderItems: OrderItem[];
-      if (updateOrderDto.items?.length) {
-        await this.orderItemModel.deleteMany({ order: orderId });
-
-        orderItems = await Promise.all(
-          updateOrderDto.items.map((i) => {
-            const item = new this.orderItemModel({
+      orderItems = await Promise.all(
+        updateOrderDto.items.map((i) => {
+          return this.orderItemModel
+            .create({
               order: order.id,
               product: i.productId,
               quantity: i.quantity,
               unitPrice: i.unitPrice,
-            });
-
-            return item.save({ session });
-          }),
-        );
-      }
-
-      if (!orderItems) {
-        orderItems = await this.orderItemModel.find({ order: orderId });
-      }
-
-      await session.commitTransaction();
-      return mapToOrderResponse(order, orderItems);
-    } catch (err) {
-      await session.abortTransaction();
-      throw err;
-    } finally {
-      await session.endSession();
+            })
+            .then((i) => i.populate('product'));
+        }),
+      );
     }
+
+    if (!orderItems) {
+      orderItems = await this.orderItemModel.find({ order: orderId });
+    }
+
+    return mapToOrderResponse(order, orderItems);
   }
 
   async findOne(orderId: string): Promise<OrderResponse> {
     const [order, orderItems] = await Promise.all([
       this.orderModel.findOne({ _id: orderId }),
-      this.orderItemModel.find({ order: orderId }),
+      this.orderItemModel.find({ order: orderId }).populate('product'),
     ]);
 
     return mapToOrderResponse(order, orderItems);
@@ -119,7 +95,9 @@ export class OrderRepository {
     const orders = await this.orderModel.find();
     return Promise.all(
       orders.map(async (o) => {
-        const orderItems = await this.orderItemModel.find({ order: o.id });
+        const orderItems = await this.orderItemModel
+          .find({ order: o.id })
+          .populate('product');
         return mapToOrderResponse(o, orderItems);
       }),
     );

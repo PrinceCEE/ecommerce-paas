@@ -11,7 +11,10 @@ async function bootstrap() {
     transport: Transport.RMQ,
     options: {
       urls: [process.env.RABBITMQ_URL],
-      queue: QueueNames.PRODUCT,
+      queue: QueueNames.OWNER,
+      queueOptions: {
+        durable: true,
+      },
     },
   });
 
@@ -20,10 +23,11 @@ async function bootstrap() {
     options: {
       package: GrpcPackageNames.PRODUCT,
       protoPath: join(process.cwd(), 'protos/product.proto'),
+      url: process.env.PRODUCTS_GRPC_URL,
     },
   });
 
   await app.startAllMicroservices();
-  await app.listen(3002);
+  await app.listen(3001);
 }
 bootstrap();

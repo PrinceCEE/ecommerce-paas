@@ -16,7 +16,7 @@ export class Product extends Document {
   @Prop({ required: true })
   description: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, unique: true })
   sku: string;
 
   @Prop({
@@ -25,6 +25,9 @@ export class Product extends Document {
     required: true,
   })
   owner: Owner | MongooseSchema.Types.ObjectId | string;
+
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export const ProductSchema = SchemaFactory.createForClass(Product);

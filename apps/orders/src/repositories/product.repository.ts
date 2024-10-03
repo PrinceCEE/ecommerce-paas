@@ -12,18 +12,22 @@ export class ProductRepository {
   ) {}
 
   async create(createProductDto: CreateProductDto) {
-    return this.productModel.create(createProductDto);
+    const { id, ...dtos } = createProductDto;
+    return this.productModel.create({ _id: id, ...dtos });
   }
 
   async updateMany(createProductDtos: CreateProductDto[]) {
     await this.productModel.bulkWrite(
-      createProductDtos.map((p) => ({
-        updateOne: {
-          filter: { _id: p._id },
-          update: { $set: p },
-          upsert: true,
-        },
-      })),
+      createProductDtos.map((p) => {
+        const { id, ...dtos } = p;
+        return {
+          updateOne: {
+            filter: { _id: id },
+            update: { $set: dtos },
+            upsert: true,
+          },
+        };
+      }),
     );
   }
 

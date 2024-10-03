@@ -3,7 +3,7 @@ syntax = "proto3";
 package product;
 
 service ProductService {
-  rpc GetPoducts(GetProductsRequest) returns (GetProductsResponse);
+  rpc GetProducts(GetProductsRequest) returns (GetProductsResponse);
 }
 
 message GetProductsRequest {
@@ -21,4 +21,6 @@ message Product {
   string description = 4;
   string sku = 5;
   string ownerId = 6;
+  string createdAt = 7;
+  string updatedAt = 8;
 }

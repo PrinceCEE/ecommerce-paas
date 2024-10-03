@@ -28,6 +28,9 @@ export class OrderItem extends Document {
 
   @Prop({ required: true })
   quantity: number;
+
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export const OrderItemSchema = SchemaFactory.createForClass(OrderItem);

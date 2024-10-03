@@ -27,3 +27,8 @@ export enum RabbitMQNames {
   PRODUCT = 'PRODUCT_SERVICE',
   ORDER = 'ORDER_SERVICE',
 }
+
+export enum EventNames {
+  OWNER_UPDATED = 'owner.updated',
+  PRODUCT_UPDATED = 'product.updated',
+}
