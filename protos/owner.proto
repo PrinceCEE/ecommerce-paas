@@ -2,8 +2,6 @@ syntax = "proto3";
 
 package owner;
 
-import "google/protobuf/timestamp.proto";
-
 service OwnerService {
   rpc GetOwner (GetOwnerRequest) returns (GetOwnerResponse) {}
 }
@@ -18,8 +16,8 @@ message Owner {
   string lastName = 3;
   string email = 4;
   string address = 5;
-  google.protobuf.Timestamp createdAt = 6;
-  google.protobuf.Timestamp updatedAt = 7;
+  string createdAt = 6;
+  string updatedAt = 7;
 }
 
 message GetOwnerResponse {

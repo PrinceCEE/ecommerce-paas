@@ -3,9 +3,18 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { ProductsModule } from './products.module';
 import { GrpcPackageNames, QueueNames } from '@libs/shared';
 import { join } from 'path';
+import { HttpStatus, ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(ProductsModule);
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      errorHttpStatusCode: HttpStatus.BAD_REQUEST,
+      transform: true,
+      whitelist: true,
+    }),
+  );
 
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.RMQ,

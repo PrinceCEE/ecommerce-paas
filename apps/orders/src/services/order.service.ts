@@ -11,6 +11,7 @@ import { ClientGrpc } from '@nestjs/microservices';
 import { ApiResponse, OrderResponse, ProductResponse } from '../types';
 import { firstValueFrom } from 'rxjs';
 import { getTotalAmount } from '../utils';
+import { CacheService } from './cache.service';
 
 @Injectable()
 export class OrderService implements OnModuleInit {
@@ -19,6 +20,7 @@ export class OrderService implements OnModuleInit {
   constructor(
     private readonly orderRepository: OrderRepository,
     private readonly productRepository: ProductRepository,
+    private readonly cacheService: CacheService,
 
     @Inject(GrpcNames.PRODUCT)
     private readonly productServiceClient: ClientGrpc,
@@ -52,7 +54,6 @@ export class OrderService implements OnModuleInit {
       i.unitPrice = product.price;
     });
 
-    console.log(createOrderDto.items);
     const order = await this.orderRepository.create(createOrderDto);
     return {
       message: 'Order created',
@@ -102,9 +103,15 @@ export class OrderService implements OnModuleInit {
   async findOrder(
     orderId: string,
   ): Promise<ApiResponse<{ order: OrderResponse }>> {
-    const order = await this.orderRepository.findOne(orderId);
+    let order = await this.cacheService.get(orderId);
+
     if (!order) {
-      throw new NotFoundException('Order not found');
+      order = await this.orderRepository.findOne(orderId);
+      if (!order) {
+        throw new NotFoundException('Order not found');
+      }
+
+      this.cacheService.set(orderId, order);
     }
 
     return {

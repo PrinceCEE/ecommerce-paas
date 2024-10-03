@@ -44,8 +44,7 @@ services:
       - rabbitmq
     environment:
       MONGO_URI: mongodb://order-db:27017/orders
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
+      REDIS_URL: redis://redis:6379
       RABBITMQ_URL: amqp://rabbitmq:5672
       PRODUCTS_GRPC_URL: products:5001
 

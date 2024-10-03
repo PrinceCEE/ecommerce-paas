@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { OrdersEventsController, OrdersHttpController } from './controllers';
-import { OrderService } from './services';
+import { CacheService, OrderService } from './services';
 import { OrderRepository, ProductRepository } from './repositories';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -47,6 +47,6 @@ import { join } from 'path';
     ]),
   ],
   controllers: [OrdersHttpController, OrdersEventsController],
-  providers: [OrderService, OrderRepository, ProductRepository],
+  providers: [OrderService, OrderRepository, ProductRepository, CacheService],
 })
 export class OrdersModule {}

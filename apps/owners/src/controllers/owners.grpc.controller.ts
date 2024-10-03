@@ -7,7 +7,7 @@ import { GetOwnerRequest } from '@libs/shared';
 export class OwnersGrpcController {
   constructor(private readonly ownersService: OwnersService) {}
 
-  @GrpcMethod('OwnerService', 'FindById')
+  @GrpcMethod('OwnerService', 'GetOwner')
   async getOwner(data: GetOwnerRequest) {
     const response = await this.ownersService.findOneOwner(data.ownerId);
     return { owner: response.data.owner };

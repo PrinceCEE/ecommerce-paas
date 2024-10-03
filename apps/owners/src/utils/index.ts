@@ -18,8 +18,8 @@ export const mapToOwnerResponse = (owner: Owner): OwnerResponse => {
     lastName: owner.lastName,
     email: owner.email,
     address: owner.address,
-    createdAt: owner.createdAt,
-    updatedAt: owner.updatedAt,
+    createdAt: owner.createdAt.toISOString(),
+    updatedAt: owner.updatedAt.toISOString(),
   };
 };
 
