@@ -3,7 +3,7 @@ import { OwnersModule } from './owners.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { ValidationPipe } from '@nestjs/common';
 import { join } from 'path';
-import { GrpcPackageNames } from '@libs/shared';
+import { GrpcPackageNames, QueueNames } from '@libs/shared';
 
 async function bootstrap() {
   const app = await NestFactory.create(OwnersModule);
@@ -11,14 +11,17 @@ async function bootstrap() {
 
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.RMQ,
-    options: {},
+    options: {
+      urls: [process.env.RABBITMQ_URL],
+      queue: QueueNames.OWNER,
+    },
   });
 
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.GRPC,
     options: {
       package: GrpcPackageNames.OWNER,
-      protoPath: join(__dirname, 'owners/owner.proto'),
+      protoPath: join(process.cwd(), 'protos/owner.proto'),
     },
   });
 

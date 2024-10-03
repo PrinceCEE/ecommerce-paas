@@ -1,7 +1,12 @@
-import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  NotFoundException,
+  OnModuleInit,
+} from '@nestjs/common';
 import { OrderRepository, ProductRepository } from '../repositories';
 import { CreateOrderDto, UpdateOrderDto } from '../dtos';
-import { GrpcServiceNames, ProductService } from '@libs/shared';
+import { GrpcNames, GrpcServiceNames, ProductService } from '@libs/shared';
 import { ClientGrpc } from '@nestjs/microservices';
 import { ApiResponse, OrderResponse, ProductResponse } from '../types';
 import { firstValueFrom } from 'rxjs';
@@ -14,6 +19,8 @@ export class OrderService implements OnModuleInit {
   constructor(
     private readonly orderRepository: OrderRepository,
     private readonly productRepository: ProductRepository,
+
+    @Inject(GrpcNames.PRODUCT)
     private readonly productServiceClient: ClientGrpc,
   ) {}
 

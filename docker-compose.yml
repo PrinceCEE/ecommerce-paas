@@ -1,0 +1,85 @@
+services:
+  owner-service:
+    build:
+      context: .
+      args:
+        - APP=owners
+    ports:
+      - '3000:3000'
+    depends_on:
+      - owner-db
+      - rabbitmq
+    environment:
+      MONGO_URI: mongodb://owner-db:27017/owners
+      RABBITMQ_URL: amqp://rabbitmq:5672
+
+  product-service:
+    build:
+      context: .
+      args:
+        - APP=products
+    ports:
+      - '3001:3001'
+    depends_on:
+      - product-db
+      - rabbitmq
+    environment:
+      MONGO_URI: mongodb://product-db:27017/products
+      RABBITMQ_URL: amqp://rabbitmq:5672
+
+  order-service:
+    build:
+      context: .
+      args:
+        - APP=orders
+    ports:
+      - '3002:3002'
+    depends_on:
+      - order-db
+      - redis
+      - rabbitmq
+    environment:
+      MONGO_URI: mongodb://order-db:27017/orders
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      RABBITMQ_URL: amqp://rabbitmq:5672
+
+  owner-db:
+    image: mongo:4.2
+    ports:
+      - '27017:27017'
+    volumes:
+      - owner-db-data:/data/db
+
+  product-db:
+    image: mongo:4.2
+    ports:
+      - '27018:27017'
+    volumes:
+      - product-db-data:/data/db
+
+  order-db:
+    image: mongo:4.2
+    ports:
+      - '27019:27017'
+    volumes:
+      - order-db-data:/data/db
+
+  redis:
+    image: redis:6.2
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis-data:/data
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - '5672:5672' # RabbitMQ message broker port
+      - '15672:15672' # RabbitMQ management console
+
+volumes:
+  owner-db-data:
+  product-db-data:
+  order-db-data:
+  redis-data:
