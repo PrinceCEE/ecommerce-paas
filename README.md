@@ -5,8 +5,8 @@ First, clone the repository by running: git clone [https://github.com/PrinceCEE/
 To run the apps, make sure to have docker(and docker compose) installed and running.
 The commands to run:
 
-- docker compose build (This builds the services)
-- docker compose up (This runs the services)
+- `docker compose build` (This builds the services)
+- `docker compose up` (This runs the services)
 
 The hosted postman documentation can be found here [documentation](https://convre.postman.co/workspace/Ecommerce-PAAS~812c70e9-c513-4a0b-b132-2440727b98d6/collection/6886089-c0440cbb-48ea-4e62-8da8-a886af193432?action=share&creator=6886089&active-environment=6886089-066a2b00-2091-4c5a-8ff5-be4d02cb0ee6)
 
@@ -20,6 +20,11 @@ Each of the services exposes a couple of http endpoints:
   - email
   - address
   - password
+- Update Owner (PUT localhost:3000/owners/:ownerId), also requires Bearer Auth token in the header (Authorization Header)
+  - firstName
+  - lastName
+  - email
+  - address
 - Login Owner (POST localhost:3000/owners/login)
   - email
   - password
@@ -34,7 +39,7 @@ Each of the services exposes a couple of http endpoints:
   - price (number string)
   - description
   - sku
-- Update Product (POST localhost:3001/products/:productId)
+- Update Product (PUT localhost:3001/products/:productId)
   - name
   - price (number string)
   - description
@@ -53,7 +58,7 @@ Each of the services exposes a couple of http endpoints:
   - items (array)
     - productId
     - quantity
-- Update Order (POST localhost:3002/orders/:orderId)
+- Update Order (PUT localhost:3002/orders/:orderId)
   - buyerInfo
     - name
     - email
